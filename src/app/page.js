@@ -23,6 +23,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 azulejos p-6">
         <Main />
+        <p>hola</p>
       </main>
     </div>
   )
