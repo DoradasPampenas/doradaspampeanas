@@ -15,6 +15,7 @@ export default function VentasCRUD() {
     }))
     setVentas(data)
   }
+  https://github.com/DoradasPampenas/doradaspampeanas.git
 
   const actualizarEstado = async (id, estado) => {
     await updateDoc(doc(db, 'ventas', id), { estado })
