@@ -1,316 +1,251 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { db } from '../firebase'
 import {
   collection,
   addDoc,
   getDocs,
-  updateDoc,
-  deleteDoc,
+  query,
+  orderBy,
   doc,
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore'
+import { db } from '../firebase'
 
-export default function VariedadesCRUD() {
+export default function Variedades() {
   const [nombre, setNombre] = useState('')
-  const [precio, setPrecio] = useState('')
   const [descripcion, setDescripcion] = useState('')
-  const [tipo, setTipo] = useState('horno')
-  const [imagen, setImagen] = useState(null)
-  const [imagenNombre, setImagenNombre] = useState('')
-  const [preview, setPreview] = useState(null)
-
+  const [tipoCoccion, setTipoCoccion] = useState('horno')
+  const [rutaImagen, setRutaImagen] = useState('')
   const [ingredientes, setIngredientes] = useState([])
-  const [ingredienteNombre, setIngredienteNombre] = useState('')
-  const [ingredientePrecio, setIngredientePrecio] = useState('')
-  const [ingredienteGramos, setIngredienteGramos] = useState('')
-
-  const [editandoId, setEditandoId] = useState(null)
+  const [unidad, setUnidad] = useState('')
+  const [nombreIng, setNombreIng] = useState('')
+  const [cantidad, setCantidad] = useState('')
+  const [precio, setPrecio] = useState('')
+  const [gananciaDeseada, setGananciaDeseada] = useState(50)
   const [variedades, setVariedades] = useState([])
-
-  const variedadesRef = collection(db, 'variedades')
-
-  const obtenerVariedades = () => {
-    getDocs(variedadesRef).then((snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-      setVariedades(data)
-    })
-  }
+  const [modoEdicion, setModoEdicion] = useState(null)
 
   useEffect(() => {
-    obtenerVariedades()
+    cargarVariedades()
   }, [])
 
+  const cargarVariedades = async () => {
+    const variedadesRef = collection(db, 'variedades')
+    const q = query(variedadesRef, orderBy('timestamp', 'desc'))
+    const snapshot = await getDocs(q)
+    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    setVariedades(docs)
+  }
+
   const agregarIngrediente = () => {
-    if (!ingredienteNombre || !ingredientePrecio || !ingredienteGramos) return
-    setIngredientes([
-      ...ingredientes,
-      {
-        nombre: ingredienteNombre,
-        precio: parseFloat(ingredientePrecio),
-        gramos: parseFloat(ingredienteGramos),
-      },
-    ])
-    setIngredienteNombre('')
-    setIngredientePrecio('')
-    setIngredienteGramos('')
+    if (unidad && cantidad && precio && nombreIng) {
+      setIngredientes(prev => [
+        ...prev,
+        {
+          nombre: nombreIng,
+          unidad,
+          cantidad: parseFloat(cantidad),
+          precio: parseFloat(precio)
+        }
+      ])
+      setUnidad('')
+      setCantidad('')
+      setPrecio('')
+      setNombreIng('')
+    }
   }
 
-  const quitarIngrediente = (index) => {
-    setIngredientes(ingredientes.filter((_, i) => i !== index))
-  }
-
-  const handleAgregar = () => {
-    if (!nombre || !precio) return
-    const urlImagen = imagen ? `/imagenes/variedades/${imagen.name}` : ''
-    addDoc(variedadesRef, {
-      nombre,
-      precio,
-      descripcion,
-      tipo,
-      imagen: urlImagen,
-      ingredientes,
-      vendidas: 0,
-      produccion: 0,
-      imprimiendo: 0,
-      impresas: 0,
-    }).then(() => {
-      limpiarFormulario()
-      obtenerVariedades()
-    })
-  }
-
-  const handleEliminar = (id) => {
-    deleteDoc(doc(db, 'variedades', id)).then(() => obtenerVariedades())
-  }
-
-  const handleEditar = (variedad) => {
-    setEditandoId(variedad.id)
-    setNombre(variedad.nombre)
-    setPrecio(variedad.precio)
-    setDescripcion(variedad.descripcion || '')
-    setTipo(variedad.tipo || 'horno')
-    setImagenNombre(variedad.imagen?.split('/').pop() || '')
-    setPreview(variedad.imagen || null)
-    setImagen(null)
-    setIngredientes(variedad.ingredientes || [])
-  }
-
-  const handleActualizar = () => {
-    if (!editandoId) return
-    const docRef = doc(db, 'variedades', editandoId)
-    const urlImagen = imagen
-      ? `/imagenes/variedades/${imagen.name}`
-      : imagenNombre
-      ? `/imagenes/variedades/${imagenNombre}`
-      : ''
-    updateDoc(docRef, {
-      nombre,
-      precio,
-      descripcion,
-      tipo,
-      imagen: urlImagen,
-      ingredientes,
-    }).then(() => {
-      limpiarFormulario()
-      obtenerVariedades()
-    })
-  }
-
-  const limpiarFormulario = () => {
-    setEditandoId(null)
-    setNombre('')
-    setPrecio('')
-    setDescripcion('')
-    setTipo('horno')
-    setImagen(null)
-    setImagenNombre('')
-    setPreview(null)
-    setIngredientes([])
-    setIngredienteNombre('')
-    setIngredientePrecio('')
-    setIngredienteGramos('')
+  const calcularCostoPorDocena = () => {
+    return ingredientes.reduce(
+      (acc, ing) => acc + ing.cantidad * ing.precio,
+      0
+    )
   }
 
   const calcularPrecioSugerido = () => {
-    const base = parseFloat(precio)
-    return isNaN(base) ? '0.00' : (base * 1.3).toFixed(2)
+    const costo = calcularCostoPorDocena()
+    return costo + (costo * gananciaDeseada) / 100
+  }
+
+  const guardarVariedad = async () => {
+    if (!nombre || !rutaImagen || ingredientes.length === 0) {
+      alert('Faltan campos obligatorios')
+      return
+    }
+
+    const data = {
+      nombre,
+      descripcion,
+      tipoCoccion,
+      imagen: rutaImagen,
+      ingredientes,
+      stock: 0,
+      costoDocena: calcularCostoPorDocena(),
+      precioSugeridoDocena: calcularPrecioSugerido(),
+      gananciaPorcentaje: gananciaDeseada,
+      timestamp: Date.now()
+    }
+
+    try {
+      if (modoEdicion) {
+        const ref = doc(db, 'variedades', modoEdicion)
+        await updateDoc(ref, data)
+        setVariedades(prev =>
+          prev.map(v => (v.id === modoEdicion ? { ...data, id: modoEdicion } : v))
+        )
+      } else {
+        const docRef = await addDoc(collection(db, 'variedades'), data)
+        setVariedades(prev => [{ ...data, id: docRef.id }, ...prev])
+      }
+
+      resetearFormulario()
+    } catch (error) {
+      console.error('Error al guardar variedad:', error)
+    }
+  }
+
+  const resetearFormulario = () => {
+    setNombre('')
+    setDescripcion('')
+    setTipoCoccion('horno')
+    setRutaImagen('')
+    setIngredientes([])
+    setUnidad('')
+    setNombreIng('')
+    setCantidad('')
+    setPrecio('')
+    setGananciaDeseada(50)
+    setModoEdicion(null)
+  }
+
+  const prepararEdicion = variedad => {
+    setNombre(variedad.nombre)
+    setDescripcion(variedad.descripcion || '')
+    setTipoCoccion(variedad.tipoCoccion)
+    setRutaImagen(variedad.imagen)
+    setIngredientes(variedad.ingredientes)
+    setGananciaDeseada(variedad.gananciaPorcentaje)
+    setModoEdicion(variedad.id)
+  }
+
+  const eliminarVariedad = async id => {
+    if (confirm('¿Eliminar esta variedad?')) {
+      await deleteDoc(doc(db, 'variedades', id))
+      setVariedades(prev => prev.filter(v => v.id !== id))
+    }
   }
 
   return (
-    <div className="w-full p-4 bg-white rounded-2xl shadow-md mt-6">
-      <h2 className="text-2xl font-bold mb-4 text-orange-600">Variedades</h2>
+    <div className="p-6 space-y-4 max-w-xl mx-auto">
+      <h2 className="text-xl font-bold">{modoEdicion ? 'Editar variedad' : 'Nueva variedad'}</h2>
 
-      <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="Nombre de la empanada"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          type="number"
-          placeholder="Precio base"
-          value={precio}
-          onChange={(e) => setPrecio(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <p className="text-sm text-gray-500">
-          Precio sugerido: ${calcularPrecioSugerido()}
-        </p>
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="horno">Al horno</option>
-          <option value="frita">Frita</option>
-        </select>
-        <textarea
-          placeholder="Descripción (opcional)"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0]
-            setImagen(file)
-            setImagenNombre(file?.name || '')
-            setPreview(file ? URL.createObjectURL(file) : null)
-          }}
-          className="w-full border rounded px-3 py-2"
-        />
-        {preview && (
-          <img
-            src={preview}
-            alt="Vista previa"
-            className="w-32 h-32 object-cover rounded mb-2"
-          />
-        )}
+      <input
+        type="text"
+        placeholder="Nombre"
+        value={nombre}
+        onChange={e => setNombre(e.target.value)}
+        className={`w-full p-2 border rounded ${!nombre && 'border-red-500'}`}
+      />
 
-        <div className="border p-3 rounded bg-gray-50 mb-2">
-          <h4 className="font-semibold mb-2 text-gray-700">Ingredientes</h4>
-          <div className="flex flex-wrap gap-2 mb-2">
-            <input
-              type="text"
-              placeholder="Nombre"
-              value={ingredienteNombre}
-              onChange={(e) => setIngredienteNombre(e.target.value)}
-              className="border rounded px-2 py-1"
-            />
-            <input
-              type="number"
-              placeholder="Precio"
-              value={ingredientePrecio}
-              onChange={(e) => setIngredientePrecio(e.target.value)}
-              className="border rounded px-2 py-1"
-            />
-            <input
-              type="number"
-              placeholder="Gramos"
-              value={ingredienteGramos}
-              onChange={(e) => setIngredienteGramos(e.target.value)}
-              className="border rounded px-2 py-1"
-            />
-            <button
-              onClick={agregarIngrediente}
-              className="bg-orange-500 text-white px-3 rounded hover:bg-orange-600"
-            >
-              +
-            </button>
-          </div>
-          {ingredientes.length > 0 && (
-            <ul className="text-sm list-disc pl-5 text-gray-700">
-              {ingredientes.map((ing, i) => (
-                <li key={i}>
-                  {ing.nombre} (${ing.precio} - {ing.gramos}g)
-                  <button
-                    onClick={() => quitarIngrediente(i)}
-                    className="ml-2 text-red-500 text-xs hover:underline"
-                  >
-                    Quitar
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+      <textarea
+        placeholder="Descripción"
+        value={descripcion}
+        onChange={e => setDescripcion(e.target.value)}
+        className="w-full p-2 border rounded"
+      />
+
+      <select
+        value={tipoCoccion}
+        onChange={e => setTipoCoccion(e.target.value)}
+        className="w-full p-2 border rounded"
+      >
+        <option value="horno">Horno</option>
+        <option value="frito">Frito</option>
+      </select>
+
+      <input
+        type="file"
+        accept="image/*"
+        onChange={e => {
+          const file = e.target.files[0]
+          if (file) {
+            setRutaImagen(`/imagenes/variedades/${file.name}`)
+          }
+        }}
+        className={`w-full p-2 border rounded ${!rutaImagen && 'border-red-500'}`}
+      />
+
+      {rutaImagen && (
+        <img
+          src={rutaImagen}
+          alt="preview"
+          className="w-32 h-32 object-cover rounded mt-2 border"
+        />
+      )}
+
+      <div className="border-t pt-4">
+        <h3 className="font-semibold">Ingredientes por docena</h3>
+        <div className="grid grid-cols-4 gap-2 mt-2">
+          <input type="text" placeholder="Nombre" value={nombreIng} onChange={e => setNombreIng(e.target.value)} className="p-2 border rounded" />
+          <input type="text" placeholder="Unidad" value={unidad} onChange={e => setUnidad(e.target.value)} className="p-2 border rounded" />
+          <input type="number" placeholder="Cantidad" value={cantidad} onChange={e => setCantidad(e.target.value)} className="p-2 border rounded" />
+          <input type="number" placeholder="Precio" value={precio} onChange={e => setPrecio(e.target.value)} className="p-2 border rounded" />
         </div>
 
-        {editandoId ? (
-          <button
-            onClick={handleActualizar}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Actualizar
-          </button>
-        ) : (
-          <button
-            onClick={handleAgregar}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Agregar
-          </button>
-        )}
+        <button onClick={agregarIngrediente} className="mt-2 bg-blue-600 text-white px-4 py-1 rounded">Agregar ingrediente</button>
+
+        <ul className="mt-3 text-sm">
+          {ingredientes.map((ing, i) => (
+            <li key={i}>
+              {ing.nombre} — {ing.cantidad} {ing.unidad} × ${ing.precio} = ${(ing.cantidad * ing.precio).toFixed(2)}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold mb-2">Lista de Variedades</h3>
-        {variedades.map((v) => (
-          <div
-            key={v.id}
-            className="flex justify-between items-center bg-orange-50 p-2 rounded-lg mb-2"
-          >
-            <div className="flex items-center gap-4">
-              {v.imagen && (
-                <img
-                  src={v.imagen}
-                  alt={v.nombre}
-                  className="w-16 h-16 rounded object-cover"
-                />
-              )}
-              <div>
-                <p className="font-medium">{v.nombre}</p>
-                <p className="text-sm text-gray-600">
-                  ${v.precio} | Sugerido: ${(parseFloat(v.precio) * 1.3).toFixed(2)}
-                </p>
-                {v.tipo && (
-                  <p className="text-sm text-gray-500 capitalize">{v.tipo}</p>
-                )}
-                {v.descripcion && (
-                  <p className="text-xs text-gray-500">{v.descripcion}</p>
-                )}
-                {v.ingredientes && v.ingredientes.length > 0 && (
-                  <ul className="text-xs text-gray-600 list-disc pl-4">
-                    {v.ingredientes.map((ing, i) => (
-                      <li key={i}>
-                        {ing.nombre} (${ing.precio} - {ing.gramos}g)
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-            <div className="space-x-2">
-              <button
-                onClick={() => handleEditar(v)}
-                className="text-blue-600 hover:underline text-sm"
-              >
-                Editar
-              </button>
-              <button
-                onClick={() => handleEliminar(v.id)}
-                className="text-red-600 hover:underline text-sm"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="pt-4 space-y-2">
+        <p><strong>Costo por docena:</strong> ${calcularCostoPorDocena().toFixed(2)}</p>
+        <label className="block">
+          Ganancia deseada (%):
+          <input type="number" value={gananciaDeseada} onChange={e => setGananciaDeseada(parseFloat(e.target.value))} className="ml-2 w-20 p-1 border rounded" />
+        </label>
+        <p><strong>Precio sugerido:</strong> ${calcularPrecioSugerido().toFixed(2)}</p>
       </div>
+
+      <button onClick={guardarVariedad} className="w-full mt-4 bg-green-600 text-white p-2 rounded">
+        {modoEdicion ? 'Actualizar variedad' : 'Guardar variedad'}
+      </button>
+
+      {modoEdicion && (
+        <button onClick={resetearFormulario} className="w-full mt-2 bg-gray-400 text-white p-2 rounded">
+          Cancelar edición
+        </button>
+      )}
+
+      <hr className="my-6" />
+
+      <h2 className="text-lg font-bold">Variedades registradas</h2>
+      <ul className="space-y-2">
+        {variedades.map((v, i) => (
+          <li key={i} className="border p-2 rounded flex items-center gap-4">
+            {v.imagen && <img src={v.imagen} alt={v.nombre} className="w-16 h-16 object-cover rounded" />}
+            <div className="flex-1">
+              <p className="font-semibold">{v.nombre}</p>
+              <p>{v.descripcion}</p>
+              <p>Tipo: {v.tipoCoccion}</p>
+              <p>Costo: ${v.costoDocena?.toFixed(2)} | Precio sugerido: ${v.precioSugeridoDocena?.toFixed(2)}</p>
+              <p>Ingredientes: {v.ingredientes?.length}</p>
+              <p>Stock: {v.stock}</p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <button onClick={() => prepararEdicion(v)} className="text-blue-600 underline text-sm">Editar</button>
+              <button onClick={() => eliminarVariedad(v.id)} className="text-red-600 underline text-sm">Eliminar</button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

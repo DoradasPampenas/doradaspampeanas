@@ -5,14 +5,13 @@ import VariedadesCRUD from '../components/VariedadesCRUD'
 import StockCRUD from '../components/StockCRUD'
 import UsuariosCRUD from '../components/UsuariosCRUD'
 import VentasCRUD from '../components/VentasCRUD'
-import AgregarIngrediente from '../components/AgregarIngrediente'
+
 
 const tabs = [
   { id: 'variedades', label: 'Variedades' },
   { id: 'stock', label: 'Stock' },
-  { id: 'usuarios', label: 'Usuarios' },
   { id: 'ventas', label: 'Ventas' },
-  { id: 'ingredientes' , label: 'Agregar Ingredientes' }
+  { id: 'usuarios', label: 'Usuarios' },
 ]
 
 export default function PanelAdmin() {
@@ -22,16 +21,15 @@ export default function PanelAdmin() {
     switch (activeTab) {
       case 'variedades': return <VariedadesCRUD />
       case 'stock': return <StockCRUD />
-      case 'usuarios': return <UsuariosCRUD />
       case 'ventas': return <VentasCRUD />
-      case 'ingredientes': return <AgregarIngrediente />
+      case 'usuarios': return <UsuariosCRUD />
       default: return null
     }
   }
 
   return (
     <div className="min-h-screen bg-orange-100 p-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-lg p-4">
+      <div className="w-full mx-auto bg-white rounded-2xl shadow-lg p-4">
         <h1 className="text-3xl font-bold mb-6 text-orange-600 text-center">Panel Administrativo</h1>
 
         {/* Tabs */}
