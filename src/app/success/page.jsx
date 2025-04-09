@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { doc, getDocs, updateDoc, collection } from "firebase/firestore";
-import { db } from "@/firebase";
+import { db } from "../firebase";
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
