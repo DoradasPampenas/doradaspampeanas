@@ -1,11 +1,11 @@
-'use client';
+"use client";
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { UserAuth } from "../context/AuthContext";
 import { ShoppingCart } from "lucide-react";
 import Modal from "./Modal";
-import Carrito from './Carrito';
+import Carrito from "./Carrito";
 
 export default function MenuSection() {
   const [variedades, setVariedades] = useState([]);
@@ -19,7 +19,10 @@ export default function MenuSection() {
     const obtenerVariedades = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "variedades"));
-        const lista = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const lista = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
         setVariedades(lista);
       } catch (error) {
         console.error("Error al obtener variedades:", error);
@@ -43,19 +46,27 @@ export default function MenuSection() {
   const agregarAlCarrito = (item, tipo) => {
     if (!clienteCargado) return;
 
-    const precioBase = Number(item.precio);
-    const precioUnidad = Math.round(precioBase * 1.3);
-    const precioDocena = Math.round(precioBase * 1.3 * 12);
+    const precioDocena = Number(item.precioSugeridoDocena);
+    if (isNaN(precioDocena)) {
+      console.warn("Precio sugerido inválido para:", item);
+      return;
+    }
 
-    setCarrito(prev => [
-      ...prev,
-      {
-        ...item,
-        tipo,
-        precioUnidad,
-        precioDocena
-      }
-    ]);
+    const precioUnidad = Math.round(precioDocena / 12);
+
+    const nuevoItem = {
+      nombre: item.descripcion || item.nombre,
+      tipo,
+      precioDocena,
+      ...(tipo === "unidad" && { precioUnidad })
+    };
+
+    setCarrito(prev => [...prev, nuevoItem]);
+  };
+
+  const formatearPrecio = (valor) => {
+    const num = Number(valor);
+    return isNaN(num) ? "Precio no disponible" : `$${num.toLocaleString("es-AR")}`;
   };
 
   return (
@@ -73,7 +84,6 @@ export default function MenuSection() {
               </span>
             )}
           </div>
-
           {!clienteCargado && (
             <button
               onClick={() => setMostrarModal(true)}
@@ -86,58 +96,67 @@ export default function MenuSection() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {variedades.map((item) => (
-          <div
-            key={item.id}
-            className="bg-orange-50 rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
-          >
-            <img
-              src={item.imagen}
-              alt={item.nombre}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{item.nombre}</h3>
-              <p className="text-sm text-gray-600 mb-2">{item.descripcion}</p>
-              {item.ingredientes?.length > 0 && (
-                <ul className="text-sm text-gray-700 mb-4 list-disc list-inside">
-                  {item.ingredientes.map((ing, i) => (
-                    <li key={i}>{typeof ing === "string" ? ing : ing.nombre}</li>
-                  ))}
-                </ul>
-              )}
+        {variedades.map((item) => {
+          const precioDocena = item.precioSugeridoDocena;
+          const precioUnidad = Math.round(precioDocena / 12);
 
-              <p className="text-lg font-semibold text-orange-600 mb-4">
-                ${Math.round(Number(item.precio) * 1.3)}
-              </p>
+          return (
+            <div
+              key={item.id}
+              className="bg-orange-50 rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
+            >
+              <img
+                src={item.imagen}
+                alt={item.nombre}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{item.nombre}</h3>
+                <p className="text-sm text-gray-600 mb-2">{item.descripcion}</p>
 
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => agregarAlCarrito(item, "unidad")}
-                  className={`py-2 rounded-lg font-semibold text-sm transition ${
-                    clienteCargado
-                      ? "bg-orange-500 hover:bg-orange-600 text-white"
-                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                  disabled={!clienteCargado}
-                >
-                  x1 Unidad
-                </button>
-                <button
-                  onClick={() => agregarAlCarrito(item, "docena")}
-                  className={`py-2 rounded-lg font-semibold text-sm transition ${
-                    clienteCargado
-                      ? "bg-orange-500 hover:bg-orange-600 text-white"
-                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
-                  disabled={!clienteCargado}
-                >
-                  x12 Docena
-                </button>
+                {item.ingredientes?.length > 0 && (
+                  <ul className="text-sm text-gray-700 mb-4 list-disc list-inside">
+                    {item.ingredientes.map((ing, i) => (
+                      <li key={i}>{typeof ing === "string" ? ing : ing.nombre}</li>
+                    ))}
+                  </ul>
+                )}
+
+                <p className="text-lg font-semibold text-orange-600 mb-2">
+                  {formatearPrecio(precioDocena)} la docena
+                </p>
+                <p className="text-sm text-gray-500 mb-4">
+                  {formatearPrecio(precioUnidad)} c/u
+                </p>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => agregarAlCarrito(item, "unidad")}
+                    className={`py-2 rounded-lg font-semibold text-sm transition ${
+                      clienteCargado
+                        ? "bg-orange-500 hover:bg-orange-600 text-white"
+                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                    disabled={!clienteCargado}
+                  >
+                    x1 Unidad
+                  </button>
+                  <button
+                    onClick={() => agregarAlCarrito(item, "docena")}
+                    className={`py-2 rounded-lg font-semibold text-sm transition ${
+                      clienteCargado
+                        ? "bg-orange-500 hover:bg-orange-600 text-white"
+                        : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    }`}
+                    disabled={!clienteCargado}
+                  >
+                    x12 Docena
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {mostrarModal && (
