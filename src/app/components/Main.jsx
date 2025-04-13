@@ -60,34 +60,7 @@ export default function Main() {
       {/* Menú */}
       <MenuSection />
 
-      {/* Ubicación */}
-      <section id="ubicacion" className="px-4 py-12 bg-orange-50 rounded-2xl">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10">
-          <div className="lg:w-1/2 text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-orange-600 mb-4">¿Dónde estamos?</h2>
-            <p className="text-gray-700 text-lg mb-6">
-              Nos encontramos en Santa Rosa, La Pampa. Retirá tus empanadas o pedí delivery en minutos. Sabor casero, atención cálida.
-            </p>
-            <p className="text-gray-600 text-sm">
-              🕒 Horario de atención: Lunes a Sábados de 19:00 a 23:30 hs.
-            </p>
-          </div>
 
-          <div className="w-full lg:w-1/2 h-64 sm:h-96">
-            <iframe
-              title="Mapa ubicación Doraditas"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d52548.24252508766!2d-64.317144!3d-36.616672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95c2cd295dc7fddf%3A0xb2a78e4c75fd46a4!2sSanta%20Rosa%2C%20La%20Pampa!5e0!3m2!1ses-419!2sar!4v1681342208893!5m2!1ses-419!2sar"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="rounded-2xl shadow-md"
-            ></iframe>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }

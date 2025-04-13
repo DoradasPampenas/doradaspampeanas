@@ -72,14 +72,15 @@ export default function MenuSection() {
   return (
     <section id="menu" className="my-12 bg-orange-50 rounded-xl shadow-xl p-6 relative">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-4xl font-bold text-left text-orange-600">
-          Doraditas de:
-        </h2>
+        <h2 className="text-4xl font-bold text-left text-orange-300">Doraditas de:</h2>
         <div className="flex items-center gap-4">
-          <div className="relative cursor-pointer" onClick={() => setMostrarCarrito(prev => !prev)}>
-            <ShoppingCart className="w-8 h-8 text-orange-600" />
+          <div
+            className="relative cursor-pointer"
+            onClick={() => setMostrarCarrito(prev => !prev)}
+          >
+            <ShoppingCart className="w-8 h-8 text-orange-300" />
             {carrito.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">
+              <span className="absolute -top-2 -right-2 bg-orange-300 text-white text-xs px-2 py-0.5 rounded-full">
                 {carrito.length}
               </span>
             )}
@@ -87,7 +88,7 @@ export default function MenuSection() {
           {!clienteCargado && (
             <button
               onClick={() => setMostrarModal(true)}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm"
+              className="bg-orange-300 hover:bg-orange-500 text-white px-4 py-2 rounded-lg text-sm"
             >
               Cargar datos de envío
             </button>
@@ -103,29 +104,38 @@ export default function MenuSection() {
           return (
             <div
               key={item.id}
-              className="bg-orange-50 rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
+              style={{
+                backgroundImage: `url(${item.imagenrelleno})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat"
+              }}
+              className=" rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
             >
-              <img
-                src={item.imagen}
-                alt={item.nombre}
-                className="w-full h-48 object-cover"
-              />
+
+
+              <h3 className="text-3xl text-center font-bold text-orange-100 bg-orange-300 p-4">{item.nombre}</h3>
+                <img
+                  src={item.imagen}
+                  alt={item.nombre}
+                  className="w-full h-48 object-cover"
+                />
+
               <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">{item.nombre}</h3>
-                <p className="text-sm text-gray-600 mb-2">{item.descripcion}</p>
+                <p className="text-sl text-yellow-300 mb-2">{item.descripcion}</p>
 
                 {item.ingredientes?.length > 0 && (
-                  <ul className="text-sm text-gray-700 mb-4 list-disc list-inside">
+                  <ul className="text-sm text-yellow-100 mb-4 list-disc list-inside">
                     {item.ingredientes.map((ing, i) => (
                       <li key={i}>{typeof ing === "string" ? ing : ing.nombre}</li>
                     ))}
                   </ul>
                 )}
 
-                <p className="text-lg font-semibold text-orange-600 mb-2">
+                <p className="text-lg font-semibold text-yellow-100 mb-2">
                   {formatearPrecio(precioDocena)} la docena
                 </p>
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-yellow-100 mb-4">
                   {formatearPrecio(precioUnidad)} c/u
                 </p>
 
@@ -134,7 +144,7 @@ export default function MenuSection() {
                     onClick={() => agregarAlCarrito(item, "unidad")}
                     className={`py-2 rounded-lg font-semibold text-sm transition ${
                       clienteCargado
-                        ? "bg-orange-500 hover:bg-orange-600 text-white"
+                        ? "bg-orange-300 hover:bg-yellow-500 text-white"
                         : "bg-gray-300 text-gray-600 cursor-not-allowed"
                     }`}
                     disabled={!clienteCargado}
@@ -145,7 +155,7 @@ export default function MenuSection() {
                     onClick={() => agregarAlCarrito(item, "docena")}
                     className={`py-2 rounded-lg font-semibold text-sm transition ${
                       clienteCargado
-                        ? "bg-orange-500 hover:bg-orange-600 text-white"
+                        ? "bg-orange-300 hover:bg-yellow-500 text-white"
                         : "bg-gray-300 text-gray-600 cursor-not-allowed"
                     }`}
                     disabled={!clienteCargado}
@@ -160,10 +170,12 @@ export default function MenuSection() {
       </div>
 
       {mostrarModal && (
-        <Modal cerrar={() => {
-          setMostrarModal(false);
-          setClienteCargado(true);
-        }} />
+        <Modal
+          cerrar={() => {
+            setMostrarModal(false);
+            setClienteCargado(true);
+          }}
+        />
       )}
 
       {mostrarCarrito && (
