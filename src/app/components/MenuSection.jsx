@@ -72,7 +72,7 @@ export default function MenuSection() {
   return (
     <section id="menu" className="my-12 bg-orange-50 rounded-xl shadow-xl p-6 relative">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-4xl font-bold text-left text-orange-300">Doraditas de:</h2>
+        <h2 className="text-4xl sm:text-2xl font-bold text-left text-orange-300">Doraditas de:</h2>
         <div className="flex items-center gap-4">
           <div
             className="relative cursor-pointer"
