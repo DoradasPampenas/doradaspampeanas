@@ -53,7 +53,9 @@ export default function Header() {
                 >
                   🥟
                 </span>
+                
               ))}
+              <p className="text-xl font-bold text-orange-300">{doradas}/7</p>
             </div>
           )}
         </div>

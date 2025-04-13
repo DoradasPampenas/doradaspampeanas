@@ -104,17 +104,20 @@ export default function MenuSection() {
           return (
             <div
               key={item.id}
-              style={{
-                backgroundImage: `url(${item.imagenrelleno})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat"
-              }}
+    
               className=" rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
             >
 
-
-              <h3 className="text-3xl text-center font-bold text-orange-100 bg-orange-300 p-4">{item.nombre}</h3>
+            <div 
+                        style={{
+                          backgroundImage: `url(${item.imagenrelleno})`,
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat"
+                        }}
+                        className="p-10">
+              <h3 className="text-3xl text-center font-bold text-white">{item.nombre}</h3>
+              </div>
                 <img
                   src={item.imagen}
                   alt={item.nombre}
@@ -122,20 +125,20 @@ export default function MenuSection() {
                 />
 
               <div className="p-4">
-                <p className="text-sl text-yellow-300 mb-2">{item.descripcion}</p>
+                <p className="text-sl text-yellow-500 mb-2">{item.descripcion}</p>
 
                 {item.ingredientes?.length > 0 && (
-                  <ul className="text-sm text-yellow-100 mb-4 list-disc list-inside">
+                  <ul className="text-sm text-yellow-400 mb-4 list-disc list-inside">
                     {item.ingredientes.map((ing, i) => (
                       <li key={i}>{typeof ing === "string" ? ing : ing.nombre}</li>
                     ))}
                   </ul>
                 )}
 
-                <p className="text-lg font-semibold text-yellow-100 mb-2">
+                <p className="text-lg font-semibold text-yellow-400 mb-2">
                   {formatearPrecio(precioDocena)} la docena
                 </p>
-                <p className="text-sm text-yellow-100 mb-4">
+                <p className="text-sm text-yellow-400 mb-4">
                   {formatearPrecio(precioUnidad)} c/u
                 </p>
 

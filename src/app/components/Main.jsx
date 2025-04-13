@@ -28,7 +28,6 @@ export default function Main() {
   return (
     <main className="flex-1 px-6 max-w-6xl mx-auto">
       
-      {/* Progreso de empanadas doradas */}
       {cliente && (
         <section className="my-8 bg-yellow-50 border-2 border-yellow-300 rounded-2xl shadow-lg p-6 text-center">
           <h2 className="text-2xl font-bold text-yellow-600 mb-2">¡Tu camino a la Empanada de Oro!</h2>
