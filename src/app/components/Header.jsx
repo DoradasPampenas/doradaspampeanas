@@ -36,9 +36,9 @@ export default function Header() {
   return (
     <header className="bg-orange-50 text-black shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        
-        {/* Logo + Progreso */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
+  
+        {/* Logo */}
+        <div className="flex items-center justify-center sm:justify-start w-full sm:w-auto">
           <Image
             src="/LOGOREAL.png"
             alt="Logo"
@@ -46,24 +46,8 @@ export default function Header() {
             height={80}
             className="object-contain"
           />
-
-          {user && (
-            <div className="flex items-center gap-1 flex-wrap justify-center sm:justify-start">
-              {[...Array(7)].map((_, i) => (
-                <span
-                  key={i}
-                  className={`text-xl sm:text-2xl ${
-                    i < doradas ? 'opacity-100' : 'opacity-20'
-                  }`}
-                >
-                  🥟
-                </span>
-              ))}
-              <p className="text-sm sm:text-lg font-bold text-orange-300">{doradas}/7</p>
-            </div>
-          )}
         </div>
-
+  
         {/* Navegación / Login */}
         <nav className="flex items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
           {user ? (
@@ -87,7 +71,27 @@ export default function Header() {
             </button>
           )}
         </nav>
+  
+        {/* Progreso Empanadas */}
+        {user && (
+          <div className="w-full flex flex-wrap justify-center gap-1 text-center order-last sm:order-none">
+            {[...Array(7)].map((_, i) => (
+              <span
+                key={i}
+                className={`text-xl sm:text-2xl ${
+                  i < doradas ? 'opacity-100' : 'opacity-20'
+                }`}
+              >
+                🥟
+              </span>
+            ))}
+            <p className="w-full text-sm sm:text-lg font-bold text-orange-300">
+              {doradas}/7
+            </p>
+          </div>
+        )}
       </div>
     </header>
   )
+  
 }
