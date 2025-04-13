@@ -71,30 +71,33 @@ export default function MenuSection() {
 
   return (
     <section id="menu" className="my-12 bg-orange-50 rounded-xl shadow-xl p-6 relative">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-4xl sm:text-2xl font-bold text-left text-orange-300">Doraditas de:</h2>
-        <div className="flex items-center gap-4">
-          <div
-            className="relative cursor-pointer"
-            onClick={() => setMostrarCarrito(prev => !prev)}
-          >
-            <ShoppingCart className="w-8 h-8 text-orange-300" />
-            {carrito.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-orange-300 text-white text-xs px-2 py-0.5 rounded-full">
-                {carrito.length}
-              </span>
-            )}
-          </div>
-          {!clienteCargado && (
-            <button
-              onClick={() => setMostrarModal(true)}
-              className="bg-orange-300 hover:bg-orange-500 text-white px-4 py-2 rounded-lg text-sm"
-            >
-              Cargar datos de envío
-            </button>
-          )}
-        </div>
-      </div>
+<div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+  <h2 className="text-3xl sm:text-2xl font-bold text-orange-300">Doraditas de:</h2>
+
+  <div className="flex items-center gap-4 self-end sm:self-auto">
+    <div
+      className="relative cursor-pointer"
+      onClick={() => setMostrarCarrito(prev => !prev)}
+    >
+      <ShoppingCart className="w-7 h-7 sm:w-8 sm:h-8 text-orange-300" />
+      {carrito.length > 0 && (
+        <span className="absolute -top-2 -right-2 bg-orange-300 text-white text-xs px-2 py-0.5 rounded-full">
+          {carrito.length}
+        </span>
+      )}
+    </div>
+
+    {!clienteCargado && (
+      <button
+        onClick={() => setMostrarModal(true)}
+        className="bg-orange-300 hover:bg-orange-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-sm"
+      >
+        Cargar datos de envío
+      </button>
+    )}
+  </div>
+</div>
+
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {variedades.map((item) => {
@@ -104,17 +107,17 @@ export default function MenuSection() {
           return (
             <div
               key={item.id}
+              style={{
+                backgroundImage: `url(${item.imagenrelleno})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat"
+              }}
     
               className=" rounded-2xl shadow-xl overflow-hidden hover:scale-[1.02] transition-all duration-300"
             >
 
             <div 
-                        style={{
-                          backgroundImage: `url(${item.imagenrelleno})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          backgroundRepeat: "no-repeat"
-                        }}
                         className="p-10">
               <h3 className="text-3xl text-center font-bold text-white">{item.nombre}</h3>
               </div>
@@ -124,13 +127,13 @@ export default function MenuSection() {
                   className="w-full h-48 object-cover"
                 />
 
-              <div className="p-4">
+              <div className="p-4 hover:bg-orange-100 hover:bg-opacity-40">
                 <p className="text-sl text-yellow-500 mb-2">{item.descripcion}</p>
 
                 {item.ingredientes?.length > 0 && (
                   <ul className="text-sm text-yellow-400 mb-4 list-disc list-inside">
                     {item.ingredientes.map((ing, i) => (
-                      <li key={i}>{typeof ing === "string" ? ing : ing.nombre}</li>
+                      <li key={i} className="h-full p-2">{typeof ing === "string" ? ing : ing.nombre}</li>
                     ))}
                   </ul>
                 )}
